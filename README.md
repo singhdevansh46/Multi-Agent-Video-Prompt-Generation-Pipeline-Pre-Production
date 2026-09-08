@@ -19,3 +19,6 @@ Multi-agent n8n automation pipeline for transforming story ideas into production
 
 **Output Saved to Google Drive**
 ![Google Drive Output](google-drive-output.png)
+
+   ## Demo Video
+   [Watch the full workflow in action](https://youtu.be/7bWJiQLOG7g)
