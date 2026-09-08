@@ -1,0 +1,546 @@
+{
+  "name": "Multi-Agent Video Prompt Generation Pipeline (Pre-Production)",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        176
+      ],
+      "id": "40065137-31bd-4809-b22b-6f972eb4a8e1",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        240
+      ],
+      "id": "ea88caeb-faf3-4d4c-aa28-2c559237608e",
+      "name": "Google Gemini Chat Model1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        224
+      ],
+      "id": "9e23a77a-1077-4165-b157-ec15f298eac4",
+      "name": "Google Gemini Chat Model2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {
+          "maxOutputTokens": 2500
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        208
+      ],
+      "id": "ac1cb081-bc4b-43a2-815c-ae71035b32db",
+      "name": "Google Gemini Chat Model3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output || \"\";\n\nconst scenes = text\n  .split(/SCENE\\s+\\d+\\s*:/i)\n  .map(s => s.trim())\n  .filter(Boolean)\n  .map((scene, index) => ({\n    scene_number: index + 1,\n    visual_prompt: scene\n  }));\n\nreturn scenes.map(scene => ({ json: scene }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        0
+      ],
+      "id": "7bade797-f116-4ff8-9547-1b94401eff87",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2448,
+        0
+      ],
+      "id": "d535aa32-2962-4679-96c4-deebd976bafd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    scene_number: $json.scene_number,\n    visual_prompt: $json.visual_prompt,\n    status: \"ready\"\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        208
+      ],
+      "id": "ce718a19-ada4-4ef4-9779-9479ca0a57de",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.visual_prompt }}",
+        "name": "=scene_{{ $json.scene_number }}.txt",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2896,
+        208
+      ],
+      "id": "ebf83fc9-aa98-42cf-94f5-8998f2fbfc31",
+      "name": "Create file from text"
+    },
+    {
+      "parameters": {
+        "formTitle": "Content Idea Generator",
+        "formDescription": "Enter your content/video idea below",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Content Idea",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        64,
+        0
+      ],
+      "id": "3be7e296-827d-4c50-beb2-49a10260de52",
+      "name": "On form submission"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxOutputTokens": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        224
+      ],
+      "id": "a9ec36ad-8c89-4818-b0a0-68a2cc5ec709",
+      "name": "Google Gemini Chat Model4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f23acde-9d67-4ba0-a2a8-22979f1ed107",
+              "name": "character_bible",
+              "value": "CHARACTER: Leo - Age: 28 - Personality: Impulsive, hopeful, working-class - Speech style: Short punchy sentences, occasional slang, never formal - Visual: Emerald green eyes, always wears a faded denim jacket  WORLD STYLE: - Tone: Fast-paced, viral short-form (TikTok/Reels style) - Visuals: Extreme close-ups, high contrast lighting, handheld camera shake - Constraint: Every scene must stay under 8 seconds of screen time",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        288,
+        0
+      ],
+      "id": "fa39c344-b813-43da-88cd-60c8a5e862e9",
+      "name": "Character Bible"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.output;\nconst cleaned = raw.replace(/```json|```/g, '').trim();\nconst parsed = JSON.parse(cleaned);\nreturn { json: parsed };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        16
+      ],
+      "id": "41181de0-3b87-4962-90a9-5da776588f9f",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        224
+      ],
+      "id": "0b29c341-dfd2-42fb-9101-89dfdd58618f",
+      "name": "Google Gemini Chat Model5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are the MASTER STORY + CHARACTER DESIGNER for a short-form AI video.\n\nCreate the story while establishing a LOCKED MASTER CHARACTER BIBLE that all later agents must follow.\n\nIMPORTANT:\nThe characters must remain visually identical in every scene.\n\nFIRST create a MASTER CHARACTER BIBLE containing:\n\nCHARACTER ID:\nCHARACTER NAME:\nAGE:\nGENDER:\nSPECIES:\nBODY TYPE:\nHEIGHT:\nFACE:\nSKIN/FUR COLOR:\nHAIR/FUR:\nEYES:\nDISTINCTIVE FEATURES:\nCLOTHING:\nSHOES:\nACCESSORIES:\nCOLOR PALETTE:\nPERSONALITY:\nEXPRESSION STYLE:\nVOICE STYLE:\n\nFor every main character, assign a permanent CHARACTER ID such as C-001, C-002, etc.\n\nThese character details are LOCKED.\nDo not randomly change clothing, hairstyle, body type, colors, facial features, age, accessories, or other defining traits later.\n\nThen create the short-form video story.\n\nThe story should have:\n- A strong hook in the first few seconds\n- Clear beginning, escalation, and payoff\n- Fast pacing\n- Strong visual storytelling\n- Concise narration/dialogue\n- A satisfying or surprising ending\n\nDo NOT overcomplicate the story.\n\nAfter the story, provide a WORLD / STYLE BIBLE containing:\n- Overall visual style\n- Animation style\n- Environment style\n- Lighting style\n- Camera style\n- Color mood\n- Time/era\n- Important recurring locations\n- Overall cinematic rules\n\nThen provide the final story/script.\n\nIMPORTANT FOR DOWNSTREAM AGENTS:\nThe MASTER CHARACTER BIBLE and WORLD/STYLE BIBLE are authoritative.\nLater agents must preserve them exactly unless the story explicitly requires a new character or location.\n\nOUTPUT FORMAT:\n\n### MASTER CHARACTER BIBLE\n[characters]\n\n### WORLD / STYLE BIBLE\n[visual/world rules]\n\n### STORY TITLE\n[title]\n\n### SCRIPT\n[complete short-form script]",
+        "options": {
+          "systemMessage": "=You are a professional short-form video script writer.\nWrite concise, engaging scripts for Instagram Reels and YouTube Shorts.\n\nCharacter/World Bible (follow strictly):\n{{ $('Character Bible').item.json.character_bible }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        -240
+      ],
+      "id": "0ec0c177-66ca-48fb-8903-2ff72c7a7833",
+      "name": "Story & Character Architect",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a strict content-quality reviewer for short-form video scripts.\n\nEvaluate the script for:\n- Hook strength in the first 3 seconds\n- Clarity and pacing\n- Whether it matches current trending short-form video style (fast cuts, punchy lines, no filler)\n- Grammar and coherence\n\nIf the script is weak, REWRITE it to fix the issues.\nIf it's already strong, return it unchanged.\n\nAlways output ONLY valid JSON in this exact format, nothing else:\n{\n  \"approved\": true or false,\n  \"quality_score\": 1-10,\n  \"issues_found\": [\"short bullet points\"],\n  \"final_script\": \"the approved or rewritten script\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        -16
+      ],
+      "id": "8cc12a40-0d50-4b0c-ad6d-4f8f8795fcdc",
+      "name": "Script Quality Controller"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.final_script }}",
+        "options": {
+          "systemMessage": "=You are a scene-breakdown specialist for short-form video scripts.\n\nCharacter/World Bible (follow strictly, do not deviate):\n{{ $('Character Bible').item.json.character_bible }}\n\nTake the script provided in the user message and break it into numbered scenes with timestamp, visual description, and dialogue. Do not ask for additional information — the bible above and the script provided are all you need."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        960,
+        -144
+      ],
+      "id": "016f6e80-6843-4c29-a4b3-9d07c60632bd",
+      "name": "Script Improver",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are AGENT 2 — SCENE DIRECTOR for an AI animated short-form video.\n\nConvert the improved script from the previous AI Agent into EXACTLY 5 detailed scenes.\n\nThe goal is to create scenes that are:\n• visually distinct\n• narratively connected\n• detailed enough for AI video generation\n• consistent in character appearance\n• consistent in world and animation style\n\n━━━━━━━━━━━━━━━━━━━━━━\n1. STORY PRESERVATION\n━━━━━━━━━━━━━━━━━━━━━━\n\nKeep the original story, characters, events and ending.\n\nDo NOT create a different story.\nDo NOT add unnecessary characters, locations or plot events.\n\nEvery scene must move the story forward.\n\n━━━━━━━━━━━━━━━━━━━━━━\n2. CHARACTER CONSISTENCY — VERY IMPORTANT\n━━━━━━━━━━━━━━━━━━━━━━\n\nThe MASTER CHARACTER BIBLE provided by the previous AI Agent is LOCKED.\n\nFor every character appearing in each scene:\n\n• Use the exact same name\n• Use the same species\n• Use the same age\n• Use the same body shape/proportions\n• Use the same face\n• Use the same skin/fur color\n• Use the same markings\n• Use the same eyes\n• Use the same hair/fur\n• Use the same clothing\n• Use the same accessories\n• Use the same distinctive features\n\nNEVER redesign a character between scenes.\n\nNEVER randomly change clothing, colors, body proportions, facial features or accessories.\n\nDo not simply write \"same character\" or \"same outfit\".\n\nInclude the important locked appearance details directly in each scene so the next AI agent has enough information to maintain consistency.\n\n━━━━━━━━━━━━━━━━━━━━━━\n3. WORLD CONSISTENCY\n━━━━━━━━━━━━━━━━━━━━━━\n\nUse the MASTER WORLD / STYLE BIBLE from the previous AI Agent.\n\nMaintain consistency in:\n\n• animation style\n• rendering style\n• environment style\n• color language\n• lighting style\n• atmosphere\n• architecture\n• recurring locations\n• overall cinematic style\n\nDo not randomly change the visual style between scenes.\n\n━━━━━━━━━━━━━━━━━━━━━━\n4. MAKE EACH SCENE DIFFERENT\n━━━━━━━━━━━━━━━━━━━━━━\n\nThe 5 scenes must NOT look like five versions of the same shot.\n\nGive every scene a different:\n\n• story event\n• character action\n• composition\n• camera angle\n• camera movement\n• emotional beat\n• environment interaction\n\nHowever, all differences must logically belong to the same story.\n\n━━━━━━━━━━━━━━━━━━━━━━\n5. CONTINUITY\n━━━━━━━━━━━━━━━━━━━━━━\n\nTrack what happens between scenes.\n\nMaintain logical continuity of:\n\n• character location\n• clothing\n• props\n• object positions when important\n• time of day\n• weather\n• lighting\n• character emotions\n• ongoing actions\n\nIf a character picks up, drops, opens, closes, eats, carries or moves an object, remember that action in the following scene.\n\nAny major change must have a clear story reason.\n\n━━━━━━━━━━━━━━━━━━━━━━\n6. SCENE DETAIL\n━━━━━━━━━━━━━━━━━━━━━━\n\nFor EACH of the 5 scenes provide:\n\nSCENE NUMBER:\nScene 1, Scene 2, etc.\n\nDURATION:\nApproximate duration in seconds.\n\nSTORY PURPOSE:\nWhat this scene accomplishes in the story.\n\nLOCATION:\nDescribe the exact environment.\n\nTIME / LIGHTING:\nTime of day and lighting conditions.\n\nCHARACTERS:\nList every visible character and include their locked visual identity.\n\nVISUAL DESCRIPTION:\nDescribe exactly what the viewer sees.\n\nCHARACTER ACTION:\nDescribe the character's physical actions step-by-step.\n\nFACIAL EXPRESSION:\nDescribe the visible emotion and expression.\n\nBODY LANGUAGE:\nDescribe posture, gestures and movement.\n\nPROPS:\nList important objects and how they are used.\n\nFOREGROUND:\nImportant objects/elements close to the camera.\n\nBACKGROUND:\nImportant environmental details behind the characters.\n\nCAMERA SHOT:\nSpecify shot type, framing, camera position and angle.\n\nCAMERA MOVEMENT:\nSpecify whether the camera is static, tracking, panning, tilting, pushing in, pulling out, orbiting, etc.\n\nCOMPOSITION:\nDescribe where the character and important objects are positioned in the frame.\n\nLIGHTING:\nDescribe direction, quality and interaction of light with the environment.\n\nATMOSPHERE:\nDescribe mood, weather, particles and environmental feeling.\n\nMOTION:\nDescribe the important movement that occurs during the scene.\n\nNARRATION / DIALOGUE:\nKeep it concise and natural.\n\nCONTINUITY:\nExplain what carries over from the previous scene and what must remain consistent for the next scene.\n\n━━━━━━━━━━━━━━━━━━━━━━\n7. AI VIDEO GENERATION REQUIREMENT\n━━━━━━━━━━━━━━━━━━━━━━\n\nThe visual description must be concrete and specific.\n\nDo NOT use vague instructions such as:\n\n\"make it cinematic\"\n\"make it beautiful\"\n\"make it engaging\"\n\"make it emotional\"\n\nInstead describe exactly what the AI video model should see.\n\nThe scene should be detailed enough that another AI agent can convert it directly into a professional Veo/Omni video-generation prompt.\n\n━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT\n━━━━━━━━━━━━━━━━━━━━━━\n\nCreate EXACTLY 5 scenes.\n\nDo not add explanations before or after the scenes.\n\nHere is the improved script from the previous AI Agent:\n\n{{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "766f3246-3d6f-42ed-8572-db0548ebbe7c",
+      "name": "Scene Director",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are AGENT 3 — FINAL AI VIDEO PROMPT GENERATOR for an AI animated short-form video pipeline.\n\nYour job is to convert the previous AI Agent's detailed 5-scene breakdown into EXACTLY 5 production-ready prompts for an AI video-generation model.\n\nIMPORTANT:\n- Do NOT create a new story.\n- Do NOT change the events, characters, locations, or meaning of the scenes.\n- Do NOT merge scenes.\n- Do NOT remove scenes.\n- Output EXACTLY 5 scenes.\n- Preserve the exact character identity and appearance throughout all scenes.\n- Preserve the same environment, visual style, lighting style, color palette, and cinematic tone throughout the video.\n- Every scene must visually match the previous and next scene.\n\nCHARACTER CONSISTENCY:\nFor every scene, repeat the important physical appearance of every visible main character:\n- character name/identifier\n- approximate age\n- gender\n- skin tone\n- face shape\n- hair color, hairstyle and length\n- eye color\n- distinctive facial features\n- body/build\n- clothing\n- important accessories\n- any cybernetic/mechanical/animated features\n\nNEVER redesign, replace, age, recolor, or randomly change a character.\n\nENVIRONMENT CONSISTENCY:\nFor every scene, preserve the established:\n- location\n- architecture/background\n- weather\n- time of day\n- lighting\n- color palette\n- atmosphere\n- technology/fantasy elements\n- important props\n\nOnly change the environment when the Scene 2 breakdown explicitly requires a location change.\n\nVIDEO PROMPT REQUIREMENTS:\nEach scene must describe:\n1. Exact character appearance\n2. Character action and body movement\n3. Facial expression/emotion\n4. Environment and background\n5. Important props\n6. Camera shot/framing\n7. Camera movement\n8. Lighting\n9. Atmosphere\n10. Visual style\n11. Motion details suitable for AI video generation\n12. Continuity with the previous/next scene\n\nMake each scene visually specific enough that an AI video generator can generate the scene without needing additional explanation.\n\nDo not add dialogue or narration unless it is explicitly required by the scene breakdown. If dialogue/narration is present, preserve its meaning exactly.\n\nCINEMATIC STYLE:\nUse cinematic AI animation with detailed 3D animated characters, expressive facial animation, realistic environmental motion, cinematic composition, depth of field, physically believable movement, detailed textures, atmospheric lighting, and smooth camera motion.\n\nDo not introduce a different art style in any scene.\n\nOUTPUT FORMAT:\nOutput ONLY these 5 lines:\n\nSCENE 1: [detailed production-ready video-generation prompt]\n\nSCENE 2: [detailed production-ready video-generation prompt]\n\nSCENE 3: [detailed production-ready video-generation prompt]\n\nSCENE 4: [detailed production-ready video-generation prompt]\n\nSCENE 5: [detailed production-ready video-generation prompt]\n\nEach scene must be 2–4 detailed sentences.\n\nPrevious AI Agent's detailed scene breakdown:\n\n{{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "6f8e79c0-536a-44db-84ac-c7ddac5d95aa",
+      "name": "Video Prompt Generator",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a strict reviewer for AI video-generation prompts.\n\nCheck the prompt for:\n- Enough visual detail (camera angle, lighting, motion, subject)\n- Consistency with the character/world bible\n- No vague or generic phrasing\n- Correct length (not too short, not bloated)\n\nIf weak, rewrite it stronger. If already strong, keep it unchanged.\n\nOutput ONLY valid JSON:\n{\n  \"approved\": true/false,\n  \"quality_score\": 1-10,\n  \"final_prompt\": \"the approved or improved video-generation prompt\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1840,
+        0
+      ],
+      "id": "a20ca1e3-9e47-47ca-bec8-d47320f40958",
+      "name": "Final Prompt Quality Controller"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Story & Character Architect",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Script Improver",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Scene Director",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Video Prompt Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create file from text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create file from text": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Character Bible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Script Quality Controller",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Bible": {
+      "main": [
+        [
+          {
+            "node": "Story & Character Architect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Script Improver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Prompt Quality Controller",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Story & Character Architect": {
+      "main": [
+        [
+          {
+            "node": "Script Quality Controller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Script Quality Controller": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Script Improver": {
+      "main": [
+        [
+          {
+            "node": "Scene Director",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scene Director": {
+      "main": [
+        [
+          {
+            "node": "Video Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompt Generator": {
+      "main": [
+        [
+          {
+            "node": "Final Prompt Quality Controller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Prompt Quality Controller": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
